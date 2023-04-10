@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 import pandas as pd 
 import matplotlib.pyplot as plt
+import pandas as pd 
 
 def open_spectra_image(file_path, hdf5_location='Experiments/__unnamed__/data'):
     """ Open a spectral image file.
@@ -18,3 +19,15 @@ def open_spectra_image(file_path, hdf5_location='Experiments/__unnamed__/data'):
     f.close()
     
     return spec_image
+
+
+def open_target_image(file_path, 
+        target_elems=['S_K','K_K','Ca_K','Cr_K','Mn_K','Fe_K','Cu_K','Zn_K','Sr_K','Au_L','Hg_L','Pb_L'], 
+        sep='  ', engine='python'):
+    
+    ## Open target image file (elemental_maps)
+    df = pd.read_csv(file_path , sep=sep, engine=engine)
+    target_image = np.array(df[target_elems])
+    h, w = df['row'].iloc[-1] + 1, df['column'].iloc[-1] + 1
+    target_image = target_image.reshape(h, w, len(target_elems))
+    return target_image
