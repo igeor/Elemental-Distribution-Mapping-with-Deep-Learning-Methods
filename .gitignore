@@ -1,4 +1,4 @@
 /hsi
 /data
-/__pycache__
+**/__pycache__/
 utils.py
