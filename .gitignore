@@ -3,3 +3,4 @@
 **/__pycache__/
 script.py
 nohup.out
+*.txt
