@@ -15,7 +15,7 @@ class Pixel2PixelDataset(Dataset):
         self.device = device
         self.band_min, self.band_max = band_range
         self.target_elems = target_elems
-        self.X_train = []; self.y_train = []
+        self.X = []; self.y = []
 
         self.train_spec_files = [self.dir_name + '/spec/' + x + '.hdf5' for x in self.image_names]
         self.train_elem_files = [self.dir_name + '/elem_maps/' + x +'.dat' for x in self.image_names]
@@ -30,6 +30,7 @@ class Pixel2PixelDataset(Dataset):
             spec_image = spec_image.reshape(
                 spec_image.shape[0]*spec_image.shape[1], spec_image.shape[2]
             )
+            spec_image = spec_image[:,self.band_min:self.band_max]
             
             ## Open target image file (elemental_maps)
             target_file = spec_file.replace("spec", "elem_maps")
@@ -42,22 +43,42 @@ class Pixel2PixelDataset(Dataset):
                 if(idx % self.sample_step == 0):
                     x = np.expand_dims(spectra, axis=0).astype(np.float32)
                     x = torch.tensor(x)
-                    self.X_train.append(x)
+                    self.X.append(x)
                     y = torch.tensor(target_image[idx].astype(np.float32))
-                    self.y_train.append(y)
+                    self.y.append(y)
 
     def __getitem__(self, index):
-        x_in = self.X_train[index][:,self.band_min:self.band_max]
-        y_in = self.y_train[index]
+        x_in, y_in = self.X[index], self.y[index]
         return x_in.to(self.device), y_in.to(self.device)
 
     def __len__(self):
-        return len(self.X_train)
+        return len(self.X)
 
 
 if __name__ == "__main__":
     directory = '/home/igeor/MSC-THESIS/data/h5'
-    dataset = Pixel2PixelDataset(directory, sample_step=1, device='cuda', band_range=(80, 2128), 
+    dataset = Pixel2PixelDataset(directory, sample_step=10, device='cuda', band_range=(80, 2128), 
                                  image_names=['gogo', 'saintjohn', 'dionisios', 'fanourios', 'odigitria', 'minos'])
-    print(len(dataset))
     
+    from torch import nn 
+    fcn = nn.Sequential(
+        nn.Linear(2048, 512),
+        nn.ReLU(),
+        nn.Linear(512, 64),
+        nn.ReLU(),
+        nn.Linear(64, 12)
+    ).to('cuda')
+
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
+    optimizer = torch.optim.Adam(fcn.parameters(), lr=0.01)
+
+    for epoch in range(100):
+        epoch_loss = 0.0
+        for x, y in dataloader:
+            y_hat = fcn(x)
+            loss = nn.MSELoss()(y_hat, y)
+            epoch_loss += loss.item() / len(dataloader)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+        print(f'Epoch: {epoch} | Loss: {epoch_loss}')
