@@ -3,12 +3,23 @@ import torch.nn as nn
 
 class Conv1DModel(nn.Module):
     def __init__(self, in_features=2048, hidden_dims=[64, 64], out_features=12, 
-                prior_layer=None, cat_input=True, flatten_dims=8192, dropout=0.1):
-        
+                prior_layer=None, iis=True, flatten_dims=8192, dropout=0.0):
+        """
+        Convolutional 1D model for elemental mapping
+        Args:
+            in_features: number of input features
+            hidden_dims: list of hidden dimensions
+            out_features: number of output features
+            prior_layer: prior layer to concatenate to the input
+            iis: (include input spectrum) if True, 
+                concatenate the input spectrum to the output of the prior layer
+            flatten_dims: number of dimensions to flatten the output of the convolutional layers
+            dropout: dropout rate
+        """
         super(Conv1DModel, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.cat_input = cat_input
+        self.iis = iis
         self.hidden_dims = hidden_dims
         self.flatten_dims = flatten_dims
         self.relu = nn.ReLU()
@@ -40,7 +51,7 @@ class Conv1DModel(nn.Module):
         x_in = x
         if self.prior_layer is not None:
             x = self.prior_layer(x)
-            if self.cat_input:
+            if self.iis:
                 x = torch.cat([x, x_in], dim=1)
         # Forward pass through the convolutional layers
         for _, conv in enumerate(self.conv_layers):
