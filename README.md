@@ -12,4 +12,4 @@
 
 ### Painting 5
 
-![Painting 5](results/Elemental_Mapping/figures/z-score-maps-real-pred)
+![Painting 5](results/Elemental_Mapping/figures/z-score-maps-real-pred.png)
