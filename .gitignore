@@ -3,9 +3,4 @@
 **/__pycache__/
 script.py
 nohup.out
-*.txt
-*.png
-*.pt
-/resuts
-/results/*
 Elemental_Mapping_Script.py
