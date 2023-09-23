@@ -17,13 +17,5 @@ for file in list_of_files:
 # Normalize all pure elements
 for element in pure_elements:
     pure_element =  pure_elements[element] / np.max(pure_elements[element])
-    pure_elements[element] = torch.tensor(pure_element).float()
-
-    # peaks, _ = find_peaks(pure_spectrum, height=0.001)
-    # # set the other values to 0
-    # n_pure_spectrum = np.zeros_like(pure_spectrum)
-    # n_pure_spectrum[peaks] = pure_spectrum[peaks]
-
-    pure_spectrum = pure_elements[element]
-    #pure_elements[element] = torch.tensor(pure_spectrum.clone().detach()).float()
-    pure_elements[element] = pure_spectrum.clone().detach() 
+    pure_spectrum = torch.tensor(pure_element).float()
+    pure_elements[element] = pure_spectrum.clone().detach()
