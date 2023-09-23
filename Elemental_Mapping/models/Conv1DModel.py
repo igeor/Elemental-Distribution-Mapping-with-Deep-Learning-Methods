@@ -11,8 +11,7 @@ class Conv1DModel(nn.Module):
             hidden_dims: list of hidden dimensions
             out_features: number of output features
             prior_layer: prior layer to concatenate to the input
-            iis: (include input spectrum) if True, 
-                concatenate the input spectrum to the output of the prior layer
+            iis: (include input spectrum) if True, concatenate the input spectrum to the output of the prior layer
             flatten_dims: number of dimensions to flatten the output of the convolutional layers
             dropout: dropout rate
         """
@@ -56,13 +55,11 @@ class Conv1DModel(nn.Module):
         # Forward pass through the convolutional layers
         for _, conv in enumerate(self.conv_layers):
             x = self.maxpool(self.relu(conv(x)))
-
         x = torch.flatten(x, start_dim=1)
         if self.state == 'train':
-            x = self.drop(self.relu(self.l1(x)))
+            x = self.drop(self.l1(x))
         else:
-            x = self.relu(self.l1(x))
-
+            x = self.l1(x)
         return x
 
     def train(self, dataloader, optimizer, criterion, epochs=1000, 
@@ -82,22 +79,20 @@ class Conv1DModel(nn.Module):
                 optimizer.step()
                         
         return train_loss
-
     
     def eval(self, dataloader, criterion, device='cuda'):
         self.set_state('eval')
         eval_loss = 0.0
         y_hats = []
-        for i, (x, y) in enumerate(dataloader):
-            x = x.to(device)
-            y = y.to(device)
-            with torch.no_grad():
-                y_hat = self(x)
-            y_hats += [y_hat]
-            eval_loss += criterion(y_hat, y) / (len(dataloader) * x.shape[0])
-        
+        for x, y in dataloader:
+            x = x.to(device); y = y.to(device)
+            with torch.no_grad(): y_hat = self(x)
+            loss = criterion(y_hat, y)
+            eval_loss += loss.item() / (len(dataloader) * x.shape[0])
+            y_hats += [y_hat]  
         y_hats = torch.cat(y_hats, dim=0)
-        return eval_loss.item(), y_hats
+        return eval_loss, y_hats
+
 
 if __name__ == "__main__":
     device = 'cuda'
