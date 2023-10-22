@@ -5,7 +5,7 @@ import numpy as np
 from scipy.signal import find_peaks
 
 # Get the list of all pure elements files
-list_of_files = glob.glob('/home/igeor/MSC-THESIS/data/h5/pure/*.txt')
+list_of_files = glob.glob('./data/h5/pure/*.txt')
 
 # Load all pure elements
 pure_elements = {}
